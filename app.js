@@ -33,6 +33,8 @@ let nearestMarker = null;
 let nearestLine = null;
 let manualPickMode = false;
 let installPrompt = null;
+let municipiLoaded = false;
+let municipiLoading = false;
 
 const map = L.map("map", {
   zoomControl: true,
@@ -454,10 +456,13 @@ function municipioNumber(value) {
 }
 
 async function loadMunicipi() {
+  if (municipiLoaded || municipiLoading) return municipiLoaded;
+
+  municipiLoading = true;
   let data = null;
 
   try {
-    const localResponse = await fetch("./data/municipi.geojson", { cache: "no-store" });
+    const localResponse = await fetch("./data/municipi.geojson", { cache: "force-cache" });
     if (localResponse.ok) {
       const localData = await localResponse.json();
       if (Array.isArray(localData.features) && localData.features.length > 0) {
@@ -468,19 +473,25 @@ async function loadMunicipi() {
 
   if (!data) {
     try {
-      const remoteResponse = await fetch(OFFICIAL_MUNICIPI_URL, { mode: "cors" });
+      const remoteResponse = await fetch(OFFICIAL_MUNICIPI_URL, {
+        mode: "cors",
+        cache: "force-cache"
+      });
       if (remoteResponse.ok) data = await remoteResponse.json();
     } catch (_) {}
   }
 
   if (!data || !Array.isArray(data.features)) {
+    municipiLoading = false;
     showBoundaries.checked = false;
-    showBoundaries.disabled = true;
-    return;
+    alert("Non è stato possibile caricare i confini. I servizi restano comunque disponibili.");
+    return false;
   }
 
   for (let number = 1; number <= 9; number += 1) {
-    const features = data.features.filter(feature => featureMunicipioNumber(feature) === number);
+    const features = data.features.filter(
+      feature => featureMunicipioNumber(feature) === number
+    );
     if (features.length === 0) continue;
 
     municipioLayers[number] = L.geoJSON(
@@ -492,12 +503,16 @@ async function loadMunicipi() {
           fillColor: MUNICIPIO_COLORS[number],
           fillOpacity: .14
         },
-        onEachFeature: (_, layer) => layer.bindTooltip(`Municipio ${number}`, { sticky: true })
+        onEachFeature: (_, layer) =>
+          layer.bindTooltip(`Municipio ${number}`, { sticky: true })
       }
     );
   }
 
+  municipiLoaded = true;
+  municipiLoading = false;
   updateMunicipioLayers();
+  return true;
 }
 
 function updateMunicipioLayers() {
@@ -597,7 +612,24 @@ document.getElementById("noMunicipiButton").addEventListener("click", () => {
   refreshView();
 });
 
-showBoundaries.addEventListener("change", updateMunicipioLayers);
+showBoundaries.addEventListener("change", async () => {
+  if (showBoundaries.checked && !municipiLoaded) {
+    showBoundaries.disabled = true;
+    const loaded = await loadMunicipi();
+    showBoundaries.disabled = false;
+
+    if (!loaded) {
+      showBoundaries.checked = false;
+      return;
+    }
+  }
+
+  updateMunicipioLayers();
+
+  if (showBoundaries.checked) {
+    zoomToActiveMunicipi();
+  }
+});
 showAllMarkers.addEventListener("change", renderMarkers);
 
 document.getElementById("loadCsvButton").addEventListener("click", () => {
@@ -652,8 +684,12 @@ if ("serviceWorker" in navigator) {
 
 buildMunicipioButtons();
 
-Promise.all([loadInitialServices(), loadMunicipi()])
+loadInitialServices()
+  .then(() => {
+    requestAnimationFrame(() => map.invalidateSize());
+  })
   .catch(error => {
     console.error(error);
-    nearestResult.textContent = "Si è verificato un problema nel caricamento dei dati.";
+    nearestResult.textContent =
+      "Si è verificato un problema nel caricamento dei dati.";
   });

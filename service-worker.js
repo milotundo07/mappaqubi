@@ -1,4 +1,4 @@
-const CACHE_NAME = "qubi-pwa-v1";
+const CACHE_NAME = "qubi-pwa-v2";
 const LOCAL_ASSETS = [
   "./",
   "./index.html",
@@ -9,9 +9,7 @@ const LOCAL_ASSETS = [
   "./data/services.csv",
   "./data/municipi.geojson",
   "./icons/icon-192.png",
-  "./icons/icon-512.png",
-  "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css",
-  "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+  "./icons/icon-512.png"
 ];
 
 self.addEventListener("install", event => {
