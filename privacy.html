@@ -1,30 +1,46 @@
 <!doctype html>
 <html lang="it">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Informativa tecnica sulla privacy</title>
-<style>
-body{max-width:850px;margin:0 auto;padding:24px;font:18px Arial;line-height:1.6;color:#182026}
-h1{font-size:2.2rem} .box{padding:18px;border-left:8px solid #1f6f8b;background:#f3f7f9}
-</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#1f6f8b">
+  <title>Privacy · Mappa QuBì</title>
+  <link rel="stylesheet" href="./styles.css?v=7">
+  <link rel="stylesheet" href="./admin.css?v=7">
+  <style>
+    .privacy-page{max-width:900px;margin:0 auto;padding:1rem}.privacy-page article{padding:1.2rem;border:1px solid var(--border);border-radius:16px;background:#fff;box-shadow:var(--shadow)}
+  </style>
 </head>
 <body>
-<h1>Privacy della mappa QuBì</h1>
-<div class="box">
-<p><strong>La posizione scelta dall’utente viene elaborata nel browser.</strong></p>
-<p>Non viene salvata nel file dei servizi, inviata a QuBì o registrata in un database.</p>
-</div>
-<h2>Dati non raccolti</h2>
-<ul>
-<li>Nessun account.</li>
-<li>Nessun cookie pubblicitario.</li>
-<li>Nessun sistema di analisi o tracciamento incluso nel progetto.</li>
-<li>Nessuna memorizzazione della posizione.</li>
-</ul>
-<h2>Servizi esterni</h2>
-<p>La base cartografica usa OpenStreetMap e la libreria Leaflet viene caricata da un servizio CDN. Questi fornitori possono ricevere normali dati tecnici di rete, come l’indirizzo IP, necessari a consegnare i file e le immagini della mappa.</p>
-<h2>Durata della posizione</h2>
-<p>La posizione rimane soltanto nella memoria della pagina. Chiudendo o ricaricando la pagina viene dimenticata.</p>
+  <header class="app-header">
+    <div><p class="eyebrow">Mappa QuBì</p><h1>Privacy</h1><p class="subtitle">Informativa tecnica sul funzionamento della mappa.</p></div>
+    <a class="button secondary" href="./index.html">Torna alla mappa</a>
+  </header>
+  <main class="privacy-page">
+    <article>
+      <h2>Posizione dell’utente</h2>
+      <p>La posizione ottenuta dal telefono o scelta sulla mappa viene usata soltanto nella memoria della pagina per calcolare il servizio più vicino. Non viene salvata nell’archivio dei servizi e viene dimenticata ricaricando o chiudendo la pagina.</p>
+
+      <h2>Ricerca di un indirizzo</h2>
+      <p>Quando una persona scrive un indirizzo, il testo viene inviato al servizio Nominatim di OpenStreetMap per convertirlo in coordinate geografiche. La ricerca avviene soltanto dopo un’azione esplicita dell’utente.</p>
+
+      <h2>Dati salvati nel browser</h2>
+      <p>I preferiti, la modalità semplice e le modifiche effettuate nella pagina di gestione vengono conservati nella memoria locale del browser. Questi dati restano sul dispositivo, non sono sincronizzati con altri dispositivi e possono essere eliminati cancellando i dati del sito o usando il pulsante di ripristino.</p>
+
+      <h2>Servizi esterni</h2>
+      <p>La cartografia usa OpenStreetMap. La libreria Leaflet viene caricata da un servizio CDN. Questi fornitori possono ricevere normali dati tecnici di rete, come l’indirizzo IP, necessari per consegnare mappe e file.</p>
+
+      <h2>Dati non raccolti dal progetto</h2>
+      <ul>
+        <li>Nessun account utente.</li>
+        <li>Nessun cookie pubblicitario.</li>
+        <li>Nessun sistema di profilazione.</li>
+        <li>Nessuno strumento di analisi o tracciamento incluso nel codice.</li>
+      </ul>
+
+      <h2>Segnalazioni</h2>
+      <p>Il pulsante “Segnala dato errato” apre una nuova segnalazione su GitHub. In quel caso si applicano le condizioni e l’informativa privacy di GitHub.</p>
+    </article>
+  </main>
 </body>
 </html>

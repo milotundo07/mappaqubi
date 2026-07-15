@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#1f6f8b">
+  <meta name="description" content="Gestione dei servizi della mappa QuBì">
+  <title>Gestione servizi · Mappa QuBì</title>
+  <link rel="icon" href="./icons/icon-192.png">
+  <link rel="stylesheet" href="./styles.css?v=7">
+  <link rel="stylesheet" href="./admin.css?v=7">
+</head>
+<body class="management-page">
+  <noscript><div class="noscript">Per gestire i dati è necessario attivare JavaScript.</div></noscript>
+
+  <header class="app-header management-header">
+    <div>
+      <p class="eyebrow">Mappa QuBì</p>
+      <h1>Gestione dei servizi</h1>
+      <p class="subtitle">Aggiungi, correggi, importa ed esporta i punti della mappa.</p>
+    </div>
+    <div class="header-actions">
+      <a class="button secondary" href="./index.html">Torna alla mappa</a>
+    </div>
+  </header>
+
+  <main class="management-main">
+    <section class="management-notice">
+      <h2>Dove vengono salvate le modifiche?</h2>
+      <p><strong>Le modifiche vengono salvate in questo browser.</strong> Per renderle visibili a tutti, scarica il file <code>services.json</code> e sostituiscilo nella cartella <code>data</code> del repository GitHub.</p>
+    </section>
+
+    <section class="management-toolbar" aria-label="Azioni sui dati">
+      <button id="newServiceButton" class="button primary" type="button">Aggiungi un servizio</button>
+      <button id="importCsvButton" class="button secondary" type="button">Importa CSV</button>
+      <button id="exportCsvButton" class="button secondary" type="button">Esporta CSV</button>
+      <button id="exportJsonButton" class="button secondary" type="button">Scarica services.json</button>
+      <button id="resetServicesButton" class="button ghost danger-button" type="button">Ripristina dati iniziali</button>
+      <input id="csvFileInput" type="file" accept=".csv,text/csv" hidden>
+    </section>
+
+    <section class="management-summary-grid" aria-label="Riepilogo dati">
+      <article class="summary-card"><span id="totalServices">0</span><strong>servizi</strong></article>
+      <article class="summary-card"><span id="verifiedServices">0</span><strong>con data di verifica</strong></article>
+      <article class="summary-card warning-card"><span id="warningServices">0</span><strong>con dati da controllare</strong></article>
+    </section>
+
+    <section class="management-list-panel">
+      <div class="management-list-heading">
+        <div>
+          <p class="eyebrow">Archivio locale</p>
+          <h2>Servizi salvati</h2>
+        </div>
+        <label class="form-field management-search">
+          <span>Cerca nell’archivio</span>
+          <input id="managementSearch" type="search" placeholder="Nome, indirizzo, ente…">
+        </label>
+      </div>
+      <p id="managementStatus" class="data-status" aria-live="polite"></p>
+      <div id="validationSummary" class="validation-summary" aria-live="polite"></div>
+      <div id="managementServiceList" class="management-service-list"></div>
+    </section>
+  </main>
+
+  <dialog id="serviceDialog" class="privacy-dialog wide-dialog service-editor-dialog">
+    <div class="dialog-content">
+      <div class="dialog-heading">
+        <div>
+          <p class="eyebrow">Archivio servizi</p>
+          <h2 id="serviceDialogTitle">Aggiungi un servizio</h2>
+        </div>
+        <button id="closeServiceDialogButton" class="icon-button" type="button" aria-label="Chiudi">×</button>
+      </div>
+
+      <form id="serviceForm">
+        <input name="id" type="hidden">
+        <div class="form-grid">
+          <label class="form-field full-field"><span>Nome del servizio *</span><input name="nome_servizio" type="text" required maxlength="180"></label>
+          <label class="form-field"><span>Tipo di luogo *</span><select id="editorType" name="tipo_luogo" required></select></label>
+          <label class="form-field"><span>Municipio</span><select name="municipio"><option value="">Non specificato</option><option>Municipio 1</option><option>Municipio 2</option><option>Municipio 3</option><option>Municipio 4</option><option>Municipio 5</option><option>Municipio 6</option><option>Municipio 7</option><option>Municipio 8</option><option>Municipio 9</option></select></label>
+
+          <div class="form-field full-field address-search-block">
+            <label class="form-field"><span>Indirizzo *</span><input id="editorAddress" name="indirizzo" type="text" required maxlength="220" placeholder="Es. Via Padova 36, Milano"></label>
+            <div class="coordinate-actions">
+              <button id="editorGeocodeButton" class="button secondary" type="button">Trova questo indirizzo</button>
+              <button id="editorMapPickButton" class="button ghost" type="button">Scegli sulla mappa</button>
+            </div>
+            <div id="editorGeocodeResults" class="geocode-result hidden" aria-live="polite"></div>
+          </div>
+
+          <label class="form-field"><span>Quartiere</span><input name="quartiere" type="text" maxlength="120"></label>
+          <label class="form-field"><span>Ente gestore</span><input name="ente_gestore" type="text" maxlength="180"></label>
+          <label class="form-field"><span>Macroarea / bisogno</span><input name="macroarea" type="text" maxlength="180" placeholder="Es. Educazione, salute, orientamento"></label>
+          <label class="form-field"><span>Destinatari</span><input name="destinatari" type="text" maxlength="220" placeholder="Es. Famiglie con minori"></label>
+          <label class="form-field full-field"><span>Descrizione</span><textarea name="descrizione" rows="3" maxlength="1000"></textarea></label>
+          <label class="form-field"><span>Giorni e orari</span><input name="giorni_orari" type="text" maxlength="240"></label>
+          <label class="form-field"><span>Modalità di accesso</span><input name="modalita_accesso" type="text" maxlength="240"></label>
+          <label class="form-field"><span>Telefono</span><input name="telefono" type="tel" maxlength="100"></label>
+          <label class="form-field"><span>E-mail</span><input name="email" type="email" maxlength="180"></label>
+          <label class="form-field"><span>Sito web</span><input name="sito_web" type="url" maxlength="240" placeholder="https://..."></label>
+          <label class="form-field"><span>Costo</span><input name="costo" type="text" maxlength="150" placeholder="Es. Gratuito"></label>
+          <label class="form-field"><span>Fonte</span><input name="fonte" type="text" maxlength="240" placeholder="Es. Sito dell’ente"></label>
+          <label class="form-field"><span>Stato della verifica</span><input name="stato_verifica" type="text" maxlength="180" placeholder="Es. Verificato"></label>
+          <label class="form-field"><span>Data di verifica</span><input name="data_verifica" type="date"></label>
+
+          <details class="coordinate-details full-field">
+            <summary>Coordinate avanzate</summary>
+            <div class="form-grid">
+              <label class="form-field"><span>Latitudine</span><input id="editorLatitude" name="latitudine" type="text" inputmode="decimal" placeholder="45.4642"></label>
+              <label class="form-field"><span>Longitudine</span><input id="editorLongitude" name="longitudine" type="text" inputmode="decimal" placeholder="9.1900"></label>
+            </div>
+          </details>
+        </div>
+
+        <div id="editorMapWrap" class="editor-map-wrap hidden">
+          <p><strong>Tocca la mappa nel punto corretto.</strong></p>
+          <div id="editorMap" aria-label="Mappa per scegliere il punto"></div>
+        </div>
+
+        <p id="serviceFormStatus" class="form-status" aria-live="polite"></p>
+        <div class="dialog-actions">
+          <button id="cancelServiceButton" class="button ghost" type="button">Annulla</button>
+          <button class="button primary" type="submit">Salva il servizio</button>
+        </div>
+      </form>
+    </div>
+  </dialog>
+
+  <dialog id="csvDialog" class="privacy-dialog wide-dialog">
+    <div class="dialog-content">
+      <div class="dialog-heading">
+        <div>
+          <p class="eyebrow">Importazione guidata</p>
+          <h2>Importa un file CSV</h2>
+        </div>
+        <button id="closeCsvDialogButton" class="icon-button" type="button" aria-label="Chiudi">×</button>
+      </div>
+
+      <ol class="instruction-list">
+        <li>La prima riga deve contenere i nomi delle colonne.</li>
+        <li>Ogni riga successiva rappresenta un servizio.</li>
+        <li>Salva da Excel come <strong>CSV UTF-8</strong>.</li>
+        <li>Sono accettati sia il punto e virgola sia la virgola come separatori.</li>
+        <li>Nel CSV latitudine e longitudine sono necessarie. Per un singolo servizio puoi invece scrivere soltanto l’indirizzo: il sito ricaverà automaticamente le coordinate.</li>
+      </ol>
+
+      <div class="csv-table-wrapper"><table class="csv-guide-table"><thead><tr><th>Ordine</th><th>Colonna</th><th>Contenuto</th></tr></thead><tbody id="csvGuideBody"></tbody></table></div>
+
+      <fieldset class="import-mode">
+        <legend>Cosa deve fare l’importazione?</legend>
+        <label><input type="radio" name="csvImportMode" value="add" checked><span><strong>Aggiungi ai servizi esistenti</strong><br>I duplicati identici vengono ignorati.</span></label>
+        <label><input type="radio" name="csvImportMode" value="replace"><span><strong>Sostituisci l’intero archivio</strong><br>Usa soltanto le righe valide del file.</span></label>
+      </fieldset>
+
+      <p id="csvImportStatus" class="form-status" aria-live="polite"></p>
+      <div class="dialog-actions">
+        <button id="downloadTemplateButton" class="button ghost" type="button">Scarica modello CSV</button>
+        <button id="chooseCsvButton" class="button primary" type="button">Scegli file</button>
+      </div>
+    </div>
+  </dialog>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="./data-store.js?v=7"></script>
+  <script src="./gestione.js?v=7" defer></script>
+</body>
+</html>
