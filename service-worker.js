@@ -1,10 +1,11 @@
-const CACHE_NAME = "qubi-pwa-v4";
+const CACHE_NAME = "qubi-pwa-v5";
 
 const LOCAL_ASSETS = [
   "./",
   "./index.html",
-  "./styles.css?v=4",
-  "./app.js?v=4",
+  "./styles.css?v=5",
+  "./admin.css?v=5",
+  "./app.js?v=5",
   "./manifest.webmanifest",
   "./data/services.json",
   "./data/services.csv",
@@ -40,20 +41,21 @@ self.addEventListener("activate", event => {
 });
 
 self.addEventListener("fetch", event => {
-  if (event.request.method !== "GET") return;
+  const request = event.request;
 
-  const url = new URL(event.request.url);
+  if (request.method !== "GET") return;
 
-  // Non intercetta risorse esterne:
-  // OpenStreetMap e Leaflet vengono caricati direttamente dal browser.
-  if (url.origin !== self.location.origin) {
+  const url = new URL(request.url);
+  const isSameOrigin = url.origin === self.location.origin;
+
+  if (!isSameOrigin) {
+    event.respondWith(fetch(request));
     return;
   }
 
-  // Le pagine HTML usano prima la rete, poi la cache.
-  if (event.request.mode === "navigate") {
+  if (request.mode === "navigate") {
     event.respondWith(
-      fetch(event.request)
+      fetch(request)
         .then(response => {
           const copy = response.clone();
           caches.open(CACHE_NAME)
@@ -62,26 +64,25 @@ self.addEventListener("fetch", event => {
         })
         .catch(() =>
           caches.match("./index.html")
+            .then(cached => cached || caches.match("./"))
         )
     );
     return;
   }
 
-  // Gli altri file locali usano la cache, con fallback alla rete.
   event.respondWith(
-    caches.match(event.request)
-      .then(cached => {
-        if (cached) return cached;
-
-        return fetch(event.request)
-          .then(response => {
-            if (response.ok) {
-              const copy = response.clone();
-              caches.open(CACHE_NAME)
-                .then(cache => cache.put(event.request, copy));
-            }
-            return response;
-          });
+    fetch(request)
+      .then(response => {
+        if (response.ok) {
+          const copy = response.clone();
+          caches.open(CACHE_NAME)
+            .then(cache => cache.put(request, copy));
+        }
+        return response;
       })
+      .catch(() =>
+        caches.match(request)
+          .then(cached => cached || Response.error())
+      )
   );
 });

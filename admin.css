@@ -1,0 +1,231 @@
+/* Strumenti di gestione dati aggiunti alla mappa QuBì */
+
+.data-tools {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(31, 111, 139, 0.22);
+}
+
+.data-tools h2 {
+  margin: 0 0 0.75rem;
+  font-size: 1.05rem;
+}
+
+.data-tool-buttons,
+.dialog-actions,
+.coordinate-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+.data-status,
+.form-status {
+  margin: 0.8rem 0 0;
+  padding: 0.75rem;
+  border-radius: 0.65rem;
+  background: rgba(31, 111, 139, 0.08);
+  line-height: 1.45;
+}
+
+.form-status:empty {
+  display: none;
+}
+
+.form-status.error {
+  background: rgba(165, 37, 37, 0.1);
+  color: #7d1f1f;
+}
+
+.form-status.success {
+  background: rgba(28, 123, 68, 0.1);
+  color: #155c34;
+}
+
+.danger-button {
+  border-color: #9d2d2d;
+  color: #812323;
+}
+
+.wide-dialog {
+  width: min(920px, calc(100vw - 2rem));
+  max-width: 920px;
+}
+
+.wide-dialog .dialog-content {
+  max-height: min(86vh, 900px);
+  overflow-y: auto;
+}
+
+.dialog-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.dialog-heading h2 {
+  margin-top: 0;
+}
+
+.icon-button {
+  flex: 0 0 auto;
+  min-width: 2.6rem;
+  min-height: 2.6rem;
+  border: 1px solid rgba(0, 0, 0, 0.22);
+  border-radius: 999px;
+  background: #fff;
+  font-size: 1.7rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.instruction-list {
+  padding-left: 1.4rem;
+  line-height: 1.55;
+}
+
+.instruction-list li + li {
+  margin-top: 0.45rem;
+}
+
+.csv-table-wrapper {
+  margin: 1rem 0;
+  overflow-x: auto;
+  border: 1px solid rgba(0, 0, 0, 0.14);
+  border-radius: 0.75rem;
+}
+
+.csv-guide-table {
+  width: 100%;
+  min-width: 720px;
+  border-collapse: collapse;
+  background: #fff;
+}
+
+.csv-guide-table th,
+.csv-guide-table td {
+  padding: 0.65rem 0.75rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  text-align: left;
+  vertical-align: top;
+}
+
+.csv-guide-table th {
+  position: sticky;
+  top: 0;
+  background: #eef6f8;
+  z-index: 1;
+}
+
+.category-help,
+.import-mode {
+  margin: 1rem 0;
+  padding: 0.9rem;
+  border: 1px solid rgba(31, 111, 139, 0.2);
+  border-radius: 0.75rem;
+}
+
+.category-help h3 {
+  margin: 0 0 0.4rem;
+}
+
+.category-help p {
+  margin: 0;
+  line-height: 1.5;
+}
+
+.import-mode {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.import-mode legend {
+  padding: 0 0.35rem;
+  font-weight: 700;
+}
+
+.import-mode label {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  cursor: pointer;
+}
+
+.import-mode input {
+  margin-top: 0.25rem;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+.form-field {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.form-field span {
+  font-weight: 700;
+}
+
+.form-field input,
+.form-field select,
+.form-field textarea {
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0.7rem;
+  border: 1px solid rgba(0, 0, 0, 0.25);
+  border-radius: 0.6rem;
+  background: #fff;
+  color: inherit;
+  font: inherit;
+  box-sizing: border-box;
+}
+
+.form-field textarea {
+  min-height: 6rem;
+  resize: vertical;
+}
+
+.full-field {
+  grid-column: 1 / -1;
+}
+
+.coordinate-actions {
+  margin-top: 1rem;
+}
+
+.dialog-actions {
+  justify-content: flex-end;
+  margin-top: 1.2rem;
+}
+
+code {
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 0.94em;
+}
+
+@media (max-width: 680px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .full-field {
+    grid-column: auto;
+  }
+
+  .data-tool-buttons,
+  .dialog-actions,
+  .coordinate-actions {
+    flex-direction: column;
+  }
+
+  .data-tool-buttons .button,
+  .dialog-actions .button,
+  .coordinate-actions .button {
+    width: 100%;
+  }
+}

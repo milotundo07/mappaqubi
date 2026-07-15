@@ -10,9 +10,10 @@
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="icon" href="./icons/icon-192.png">
   <link rel="apple-touch-icon" href="./icons/icon-192.png">
-
-  <link rel="stylesheet" href="./styles.css?v=4">
+  <link rel="stylesheet" href="./styles.css?v=5">
+  <link rel="stylesheet" href="./admin.css?v=5">
 </head>
+
 <body>
   <noscript>
     <div class="noscript">Per usare la mappa è necessario attivare JavaScript nel browser.</div>
@@ -24,6 +25,7 @@
       <h1>Trova un servizio vicino a te</h1>
       <p class="subtitle">Tre passaggi semplici. La tua posizione non viene salvata.</p>
     </div>
+
     <div class="header-actions">
       <button id="installButton" class="button secondary hidden" type="button">Installa l’app</button>
       <button id="privacyButton" class="button ghost" type="button">Privacy</button>
@@ -48,15 +50,9 @@
         <div class="step-content">
           <h2>Dove ti trovi?</h2>
           <div class="button-stack">
-            <button id="locationButton" class="button primary large" type="button">
-              Usa la mia posizione
-            </button>
-            <button id="mapPickButton" class="button secondary large" type="button">
-              Scegli un punto sulla mappa
-            </button>
-            <button id="clearLocationButton" class="button ghost large" type="button">
-              Cancella la posizione
-            </button>
+            <button id="locationButton" class="button primary large" type="button">Usa la mia posizione</button>
+            <button id="mapPickButton" class="button secondary large" type="button">Scegli un punto sulla mappa</button>
+            <button id="clearLocationButton" class="button ghost large" type="button">Cancella la posizione</button>
           </div>
           <p id="locationStatus" class="status" aria-live="polite">Nessuna posizione selezionata.</p>
         </div>
@@ -84,26 +80,40 @@
 
       <details class="details-panel">
         <summary>Altre opzioni</summary>
+
         <label class="check-row">
           <input id="showBoundaries" type="checkbox">
           Mostra i confini dei Municipi (caricamento su richiesta)
         </label>
+
         <label class="check-row">
           <input id="showAllMarkers" type="checkbox" checked>
           Mostra tutti i servizi sulla mappa
         </label>
-        <button id="loadCsvButton" class="button secondary" type="button">
-          Carica un CSV dal dispositivo
-        </button>
-        <input id="csvFileInput" type="file" accept=".csv,text/csv" hidden>
-        <p class="helper">Il CSV caricato resta nel dispositivo e non viene inviato online.</p>
+
+        <section class="data-tools" aria-labelledby="dataToolsTitle">
+          <h2 id="dataToolsTitle">Gestisci i punti della mappa</h2>
+
+          <div class="data-tool-buttons">
+            <button id="loadCsvButton" class="button secondary" type="button">Importa file CSV</button>
+            <button id="addPointButton" class="button secondary" type="button">Aggiungi un singolo punto</button>
+            <button id="resetDataButton" class="button ghost danger-button" type="button">Ripristina i dati iniziali</button>
+          </div>
+
+          <p id="dataStatus" class="data-status" aria-live="polite">
+            Le modifiche vengono salvate soltanto in questo browser.
+          </p>
+
+          <input id="csvFileInput" type="file" accept=".csv,text/csv" hidden>
+        </section>
       </details>
     </section>
 
     <section class="map-section">
       <div id="manualHint" class="map-hint hidden">
-        Tocca la mappa nel punto in cui ti trovi.
+        Tocca la mappa nel punto desiderato.
       </div>
+
       <div id="map" role="application" aria-label="Mappa dei servizi"></div>
 
       <div class="legend" aria-label="Legenda tipi di luogo">
@@ -124,13 +134,200 @@
     <div id="serviceList" class="service-list"></div>
   </section>
 
+  <dialog id="csvDialog" class="privacy-dialog wide-dialog">
+    <div class="dialog-content">
+      <div class="dialog-heading">
+        <div>
+          <p class="eyebrow">Importazione guidata</p>
+          <h2>Come preparare il file CSV con Excel</h2>
+        </div>
+        <button id="closeCsvDialogButton" class="icon-button" type="button" aria-label="Chiudi">×</button>
+      </div>
+
+      <ol class="instruction-list">
+        <li>La prima riga deve contenere esattamente i nomi delle colonne indicati sotto.</li>
+        <li>Ogni riga successiva rappresenta un servizio.</li>
+        <li>Non eliminare le colonne facoltative: lasciale vuote quando non hai il dato.</li>
+        <li>Salva da Excel come <strong>CSV UTF-8</strong>. Sono accettati sia la virgola sia il punto e virgola come separatori.</li>
+        <li>Per latitudine e longitudine usa coordinate decimali, per esempio <code>45.4642</code> e <code>9.1900</code>.</li>
+      </ol>
+
+      <p class="helper">
+        L’ordine consigliato è quello della tabella. Il programma riconosce le colonne dal loro nome, ma usare sempre lo stesso ordine evita il consueto carnevale degli errori da foglio elettronico.
+      </p>
+
+      <div class="csv-table-wrapper" tabindex="0" aria-label="Colonne richieste per il CSV">
+        <table class="csv-guide-table">
+          <thead>
+            <tr>
+              <th>Ordine</th>
+              <th>Nome colonna</th>
+              <th>Obbligatoria</th>
+              <th>Cosa inserire</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>1</td><td><code>nome_servizio</code></td><td>Sì</td><td>Nome del luogo o servizio</td></tr>
+            <tr><td>2</td><td><code>tipo_luogo</code></td><td>Sì</td><td>Una categoria tra quelle indicate sotto</td></tr>
+            <tr><td>3</td><td><code>ente_gestore</code></td><td>No</td><td>Ente responsabile</td></tr>
+            <tr><td>4</td><td><code>macroarea</code></td><td>No</td><td>Area tematica del servizio</td></tr>
+            <tr><td>5</td><td><code>descrizione</code></td><td>No</td><td>Breve spiegazione</td></tr>
+            <tr><td>6</td><td><code>destinatari</code></td><td>No</td><td>Persone a cui è rivolto</td></tr>
+            <tr><td>7</td><td><code>indirizzo</code></td><td>No</td><td>Via, numero civico e città</td></tr>
+            <tr><td>8</td><td><code>quartiere</code></td><td>No</td><td>Quartiere</td></tr>
+            <tr><td>9</td><td><code>giorni_orari</code></td><td>No</td><td>Giorni e orari di apertura</td></tr>
+            <tr><td>10</td><td><code>modalita_accesso</code></td><td>No</td><td>Accesso libero, prenotazione, iscrizione ecc.</td></tr>
+            <tr><td>11</td><td><code>telefono</code></td><td>No</td><td>Numero di telefono</td></tr>
+            <tr><td>12</td><td><code>email</code></td><td>No</td><td>Indirizzo e-mail</td></tr>
+            <tr><td>13</td><td><code>costo</code></td><td>No</td><td>Gratuito, quota, tariffa ecc.</td></tr>
+            <tr><td>14</td><td><code>latitudine</code></td><td>Sì</td><td>Coordinata, per esempio 45.4642</td></tr>
+            <tr><td>15</td><td><code>longitudine</code></td><td>Sì</td><td>Coordinata, per esempio 9.1900</td></tr>
+            <tr><td>16</td><td><code>fonte</code></td><td>No</td><td>Origine dell’informazione</td></tr>
+            <tr><td>17</td><td><code>stato_verifica</code></td><td>No</td><td>Verificato, da verificare, aggiornato ecc.</td></tr>
+            <tr><td>18</td><td><code>municipio</code></td><td>No</td><td>Municipio 1, Municipio 2, … Municipio 9</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="category-help">
+        <h3>Valori consigliati per <code>tipo_luogo</code></h3>
+        <p>
+          punto qubi, ospedale, casa di quartiere, scuola, servizio educativo,
+          biblioteca, cultura, sport, servizio sociale, associazione, altro.
+        </p>
+      </div>
+
+      <fieldset class="import-mode">
+        <legend>Cosa deve fare l’importazione?</legend>
+        <label>
+          <input type="radio" name="csvImportMode" value="add" checked>
+          <span><strong>Aggiungi ai punti esistenti</strong><br>Conserva i servizi presenti e aggiunge quelli del file.</span>
+        </label>
+        <label>
+          <input type="radio" name="csvImportMode" value="replace">
+          <span><strong>Sostituisci tutti i punti</strong><br>Elimina l’elenco corrente e usa soltanto i servizi del file.</span>
+        </label>
+      </fieldset>
+
+      <p id="csvImportStatus" class="form-status" aria-live="polite"></p>
+
+      <div class="dialog-actions">
+        <button id="downloadCsvTemplateButton" class="button ghost" type="button">Scarica modello CSV</button>
+        <button id="chooseCsvFileButton" class="button primary" type="button">Scegli il file e importa</button>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog id="pointDialog" class="privacy-dialog wide-dialog">
+    <div class="dialog-content">
+      <div class="dialog-heading">
+        <div>
+          <p class="eyebrow">Nuovo servizio</p>
+          <h2>Aggiungi un singolo punto</h2>
+        </div>
+        <button id="closePointDialogButton" class="icon-button" type="button" aria-label="Chiudi">×</button>
+      </div>
+
+      <form id="pointForm">
+        <div class="form-grid">
+          <label class="form-field full-field">
+            <span>Nome del servizio *</span>
+            <input name="nome_servizio" type="text" required maxlength="180">
+          </label>
+
+          <label class="form-field">
+            <span>Tipo di luogo *</span>
+            <select id="pointType" name="tipo_luogo" required></select>
+          </label>
+
+          <label class="form-field">
+            <span>Municipio</span>
+            <select name="municipio">
+              <option value="">Non specificato</option>
+              <option>Municipio 1</option><option>Municipio 2</option><option>Municipio 3</option>
+              <option>Municipio 4</option><option>Municipio 5</option><option>Municipio 6</option>
+              <option>Municipio 7</option><option>Municipio 8</option><option>Municipio 9</option>
+            </select>
+          </label>
+
+          <label class="form-field full-field">
+            <span>Indirizzo</span>
+            <input name="indirizzo" type="text" maxlength="220">
+          </label>
+
+          <label class="form-field">
+            <span>Quartiere</span>
+            <input name="quartiere" type="text" maxlength="120">
+          </label>
+
+          <label class="form-field">
+            <span>Ente gestore</span>
+            <input name="ente_gestore" type="text" maxlength="180">
+          </label>
+
+          <label class="form-field full-field">
+            <span>Descrizione</span>
+            <textarea name="descrizione" rows="3" maxlength="800"></textarea>
+          </label>
+
+          <label class="form-field">
+            <span>Giorni e orari</span>
+            <input name="giorni_orari" type="text" maxlength="220">
+          </label>
+
+          <label class="form-field">
+            <span>Modalità di accesso</span>
+            <input name="modalita_accesso" type="text" maxlength="220">
+          </label>
+
+          <label class="form-field">
+            <span>Telefono</span>
+            <input name="telefono" type="tel" maxlength="80">
+          </label>
+
+          <label class="form-field">
+            <span>E-mail</span>
+            <input name="email" type="email" maxlength="180">
+          </label>
+
+          <label class="form-field">
+            <span>Latitudine *</span>
+            <input id="pointLatitude" name="latitudine" type="text" inputmode="decimal" required placeholder="45.4642">
+          </label>
+
+          <label class="form-field">
+            <span>Longitudine *</span>
+            <input id="pointLongitude" name="longitudine" type="text" inputmode="decimal" required placeholder="9.1900">
+          </label>
+        </div>
+
+        <div class="coordinate-actions">
+          <button id="pickPointOnMapButton" class="button secondary" type="button">Scegli le coordinate sulla mappa</button>
+          <button id="useCurrentPositionForPointButton" class="button ghost" type="button">Usa la posizione già selezionata</button>
+        </div>
+
+        <p class="helper">
+          Il punto viene salvato soltanto nel browser e resta disponibile anche dopo la chiusura del sito.
+        </p>
+
+        <p id="pointFormStatus" class="form-status" aria-live="polite"></p>
+
+        <div class="dialog-actions">
+          <button id="cancelPointButton" class="button ghost" type="button">Annulla</button>
+          <button class="button primary" type="submit">Salva il punto</button>
+        </div>
+      </form>
+    </div>
+  </dialog>
+
   <dialog id="privacyDialog" class="privacy-dialog">
     <div class="dialog-content">
       <h2>Come viene gestita la privacy</h2>
-      <p><strong>La posizione viene elaborata soltanto nel browser.</strong> Non viene salvata nel CSV, inviata a QuBì o registrata in un database.</p>
+      <p><strong>La posizione viene elaborata soltanto nel browser.</strong> Non viene inviata a QuBì o registrata in un database.</p>
+      <p>I punti aggiunti o importati vengono salvati nel browser del dispositivo tramite memoria locale. Non vengono caricati online e non sono sincronizzati con altri dispositivi.</p>
+      <p>La posizione personale selezionata per la ricerca non viene salvata.</p>
       <p>Il sito non usa account, cookie pubblicitari o strumenti di analisi.</p>
       <p>La cartografia usa OpenStreetMap: come per ogni sito web, il fornitore delle tessere può ricevere normali dati tecnici di rete, come l’indirizzo IP.</p>
-      <p>Chiudendo la pagina, la posizione selezionata viene dimenticata.</p>
       <button id="closePrivacyButton" class="button primary" type="button">Ho capito</button>
     </div>
   </dialog>
@@ -144,6 +341,6 @@
     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
     crossorigin=""
   ></script>
-  <script src="./app.js?v=4" defer></script>
+  <script src="./app.js?v=5" defer></script>
 </body>
 </html>
