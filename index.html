@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#1f6f8b">
+  <meta name="description" content="Mappa accessibile dei servizi QuBì Milano">
+  <title>Mappa servizi QuBì</title>
+
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" href="./icons/icon-192.png">
+  <link rel="apple-touch-icon" href="./icons/icon-192.png">
+
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIINfQ3WkSzz6A4ZBC6DsmPHImXG8dE0dcA="
+    crossorigin=""
+  >
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <noscript>
+    <div class="noscript">Per usare la mappa è necessario attivare JavaScript nel browser.</div>
+  </noscript>
+
+  <header class="app-header">
+    <div>
+      <p class="eyebrow">QuBì Milano</p>
+      <h1>Trova un servizio vicino a te</h1>
+      <p class="subtitle">Tre passaggi semplici. La tua posizione non viene salvata.</p>
+    </div>
+    <div class="header-actions">
+      <button id="installButton" class="button secondary hidden" type="button">Installa l’app</button>
+      <button id="privacyButton" class="button ghost" type="button">Privacy</button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="controls" aria-label="Ricerca servizi">
+      <article class="step-card">
+        <div class="step-number">1</div>
+        <div class="step-content">
+          <h2>Cosa stai cercando?</h2>
+          <label class="sr-only" for="serviceType">Tipo di servizio</label>
+          <select id="serviceType" class="large-select">
+            <option value="tutti">Tutti i servizi</option>
+          </select>
+        </div>
+      </article>
+
+      <article class="step-card">
+        <div class="step-number">2</div>
+        <div class="step-content">
+          <h2>Dove ti trovi?</h2>
+          <div class="button-stack">
+            <button id="locationButton" class="button primary large" type="button">
+              Usa la mia posizione
+            </button>
+            <button id="mapPickButton" class="button secondary large" type="button">
+              Scegli un punto sulla mappa
+            </button>
+            <button id="clearLocationButton" class="button ghost large" type="button">
+              Cancella la posizione
+            </button>
+          </div>
+          <p id="locationStatus" class="status" aria-live="polite">Nessuna posizione selezionata.</p>
+        </div>
+      </article>
+
+      <article class="step-card">
+        <div class="step-number">3</div>
+        <div class="step-content">
+          <h2>Municipi</h2>
+          <p class="helper">Puoi mostrare uno o più Municipi.</p>
+          <div id="municipioButtons" class="municipio-grid" aria-label="Filtri Municipi"></div>
+          <div class="small-actions">
+            <button id="allMunicipiButton" class="button compact" type="button">Tutti</button>
+            <button id="noMunicipiButton" class="button compact ghost" type="button">Nessuno</button>
+          </div>
+        </div>
+      </article>
+
+      <article class="result-card" aria-live="polite">
+        <h2>Servizio più vicino</h2>
+        <div id="nearestResult" class="result-empty">
+          Indica la tua posizione per vedere il risultato.
+        </div>
+      </article>
+
+      <details class="details-panel">
+        <summary>Altre opzioni</summary>
+        <label class="check-row">
+          <input id="showBoundaries" type="checkbox" checked>
+          Mostra i confini dei Municipi
+        </label>
+        <label class="check-row">
+          <input id="showAllMarkers" type="checkbox" checked>
+          Mostra tutti i servizi sulla mappa
+        </label>
+        <button id="loadCsvButton" class="button secondary" type="button">
+          Carica un CSV dal dispositivo
+        </button>
+        <input id="csvFileInput" type="file" accept=".csv,text/csv" hidden>
+        <p class="helper">Il CSV caricato resta nel dispositivo e non viene inviato online.</p>
+      </details>
+    </section>
+
+    <section class="map-section">
+      <div id="manualHint" class="map-hint hidden">
+        Tocca la mappa nel punto in cui ti trovi.
+      </div>
+      <div id="map" role="application" aria-label="Mappa dei servizi"></div>
+
+      <div class="legend" aria-label="Legenda tipi di luogo">
+        <h2>Tipi di luogo</h2>
+        <div id="legendItems"></div>
+      </div>
+    </section>
+  </main>
+
+  <section class="service-list-section">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">Elenco</p>
+        <h2>Servizi visualizzati</h2>
+      </div>
+      <p id="serviceCount" class="count-badge">0 servizi</p>
+    </div>
+    <div id="serviceList" class="service-list"></div>
+  </section>
+
+  <dialog id="privacyDialog" class="privacy-dialog">
+    <div class="dialog-content">
+      <h2>Come viene gestita la privacy</h2>
+      <p><strong>La posizione viene elaborata soltanto nel browser.</strong> Non viene salvata nel CSV, inviata a QuBì o registrata in un database.</p>
+      <p>Il sito non usa account, cookie pubblicitari o strumenti di analisi.</p>
+      <p>La cartografia usa OpenStreetMap: come per ogni sito web, il fornitore delle tessere può ricevere normali dati tecnici di rete, come l’indirizzo IP.</p>
+      <p>Chiudendo la pagina, la posizione selezionata viene dimenticata.</p>
+      <button id="closePrivacyButton" class="button primary" type="button">Ho capito</button>
+    </div>
+  </dialog>
+
+  <footer>
+    <p>Dati dimostrativi: prima della pubblicazione sostituire con servizi reali e verificati.</p>
+  </footer>
+
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""
+  ></script>
+  <script src="./app.js" defer></script>
+</body>
+</html>
