@@ -45,9 +45,46 @@ const tileLayer = L.tileLayer(
   "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
   {
     maxZoom: 19,
+    minZoom: 3,
+    updateWhenIdle: true,
+    updateWhenZooming: false,
+    keepBuffer: 2,
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
   }
 ).addTo(map);
+
+let tileRetryScheduled = false;
+
+tileLayer.on("tileerror", () => {
+  if (tileRetryScheduled) return;
+
+  tileRetryScheduled = true;
+
+  window.setTimeout(() => {
+    tileRetryScheduled = false;
+    map.invalidateSize({ pan: false });
+    tileLayer.redraw();
+  }, 1200);
+});
+
+function refreshMapSize() {
+  window.requestAnimationFrame(() => {
+    map.invalidateSize({ pan: false });
+  });
+}
+
+window.addEventListener("load", () => {
+  refreshMapSize();
+  window.setTimeout(refreshMapSize, 250);
+  window.setTimeout(refreshMapSize, 900);
+});
+
+window.addEventListener("resize", refreshMapSize);
+
+if ("ResizeObserver" in window) {
+  const mapResizeObserver = new ResizeObserver(refreshMapSize);
+  mapResizeObserver.observe(document.getElementById("map"));
+}
 
 const serviceType = document.getElementById("serviceType");
 const municipioButtons = document.getElementById("municipioButtons");
@@ -677,8 +714,24 @@ document.getElementById("installButton").addEventListener("click", async () => {
 });
 
 if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./service-worker.js").catch(() => {});
+  window.addEventListener("load", async () => {
+    try {
+      const registration = await navigator.serviceWorker.register(
+        "./service-worker.js",
+        { updateViaCache: "none" }
+      );
+
+      await registration.update();
+    } catch (error) {
+      console.warn("Service worker non disponibile:", error);
+    }
+  });
+
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    if (sessionStorage.getItem("qubi-sw-reloaded") === "1") return;
+
+    sessionStorage.setItem("qubi-sw-reloaded", "1");
+    window.location.reload();
   });
 }
 
