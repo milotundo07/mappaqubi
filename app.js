@@ -64,6 +64,8 @@ let nearestMarker = null;
 let nearestLine = null;
 let manualPickMode = false;
 let pointPickMode = false;
+let geocodePreviewMarker = null;
+let lastGeocodeRequestAt = 0;
 let installPrompt = null;
 let municipiLoaded = false;
 let municipiLoading = false;
@@ -115,6 +117,9 @@ const csvImportStatus = document.getElementById("csvImportStatus");
 const pointDialog = document.getElementById("pointDialog");
 const pointForm = document.getElementById("pointForm");
 const pointFormStatus = document.getElementById("pointFormStatus");
+const pointAddress = document.getElementById("pointAddress");
+const geocodeAddressButton = document.getElementById("geocodeAddressButton");
+const geocodeResult = document.getElementById("geocodeResult");
 const pointLatitude = document.getElementById("pointLatitude");
 const pointLongitude = document.getElementById("pointLongitude");
 const pointType = document.getElementById("pointType");
@@ -141,6 +146,156 @@ function parseCoordinate(value) {
   }
 
   return Number(raw);
+}
+
+
+function clearGeocodePreview() {
+  if (geocodePreviewMarker && map.hasLayer(geocodePreviewMarker)) {
+    map.removeLayer(geocodePreviewMarker);
+  }
+  geocodePreviewMarker = null;
+}
+
+function clearGeocodeResult({ clearCoordinates = false } = {}) {
+  geocodeResult.innerHTML = "";
+  geocodeResult.className = "geocode-result hidden";
+  clearGeocodePreview();
+
+  if (clearCoordinates) {
+    pointLatitude.value = "";
+    pointLongitude.value = "";
+  }
+}
+
+function geocodeQueryText() {
+  const address = clean(pointAddress.value);
+  const neighbourhood = clean(pointForm.elements.quartiere?.value);
+  const pieces = [address, neighbourhood];
+
+  if (!/milano/i.test(`${address} ${neighbourhood}`)) {
+    pieces.push("Milano");
+  }
+
+  pieces.push("Italia");
+  return pieces.filter(Boolean).join(", ");
+}
+
+function setGeocodeResult(result, allResults = []) {
+  const latitude = Number(result.lat);
+  const longitude = Number(result.lon);
+
+  pointLatitude.value = latitude.toFixed(6);
+  pointLongitude.value = longitude.toFixed(6);
+
+  clearGeocodePreview();
+  geocodePreviewMarker = L.circleMarker([latitude, longitude], {
+    radius: 11,
+    color: "#111",
+    weight: 3,
+    fillColor: "#39a96b",
+    fillOpacity: 1
+  }).addTo(map).bindTooltip("Punto trovato dall’indirizzo");
+
+  geocodeResult.className = "geocode-result success";
+  geocodeResult.innerHTML = `
+    <h3>Indirizzo trovato</h3>
+    <p>${escapeHtml(result.display_name)}</p>
+    <p><strong>Il punto è pronto per essere salvato.</strong></p>
+    ${allResults.length > 1 ? '<p>Se non è quello corretto, scegli una delle alternative:</p>' : ''}
+    <div class="geocode-candidates"></div>
+  `;
+
+  const container = geocodeResult.querySelector(".geocode-candidates");
+
+  allResults.slice(0, 5).forEach(candidate => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "address-result-button";
+    button.textContent = candidate.display_name;
+
+    if (candidate.place_id === result.place_id) {
+      button.classList.add("selected");
+      button.setAttribute("aria-current", "true");
+    }
+
+    button.addEventListener("click", () => {
+      setGeocodeResult(candidate, allResults);
+    });
+
+    container.appendChild(button);
+  });
+}
+
+async function waitForGeocodeRateLimit() {
+  const elapsed = Date.now() - lastGeocodeRequestAt;
+  const minimumInterval = 1100;
+
+  if (elapsed < minimumInterval) {
+    await new Promise(resolve =>
+      window.setTimeout(resolve, minimumInterval - elapsed)
+    );
+  }
+
+  lastGeocodeRequestAt = Date.now();
+}
+
+async function geocodePointAddress({ showAlternatives = true } = {}) {
+  const address = clean(pointAddress.value);
+
+  if (!address) {
+    geocodeResult.textContent = "Inserisci prima un indirizzo, compreso il numero civico quando disponibile.";
+    geocodeResult.className = "geocode-result error";
+    pointAddress.focus();
+    return false;
+  }
+
+  geocodeAddressButton.disabled = true;
+  geocodeAddressButton.textContent = "Ricerca in corso…";
+  geocodeResult.textContent = "Sto cercando l’indirizzo sulla mappa…";
+  geocodeResult.className = "geocode-result";
+
+  try {
+    await waitForGeocodeRateLimit();
+
+    const url = new URL("https://nominatim.openstreetmap.org/search");
+    url.searchParams.set("q", geocodeQueryText());
+    url.searchParams.set("format", "jsonv2");
+    url.searchParams.set("addressdetails", "1");
+    url.searchParams.set("limit", "5");
+    url.searchParams.set("countrycodes", "it");
+    url.searchParams.set("accept-language", "it");
+    url.searchParams.set("viewbox", "9.04,45.56,9.33,45.36");
+    url.searchParams.set("bounded", "1");
+
+    const response = await fetch(url.toString(), {
+      headers: {
+        Accept: "application/json"
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error("Il servizio di ricerca non è disponibile in questo momento.");
+    }
+
+    const results = await response.json();
+
+    if (!Array.isArray(results) || results.length === 0) {
+      throw new Error("Indirizzo non trovato. Controlla il numero civico oppure scegli il punto manualmente sulla mappa.");
+    }
+
+    setGeocodeResult(results[0], showAlternatives ? results : []);
+    return true;
+  } catch (error) {
+    clearGeocodePreview();
+    pointLatitude.value = "";
+    pointLongitude.value = "";
+    geocodeResult.textContent = error.message;
+    geocodeResult.className = "geocode-result error";
+    return false;
+  } finally {
+    geocodeAddressButton.disabled = false;
+    geocodeAddressButton.textContent = "Trova questo indirizzo";
+  }
 }
 
 function normalizeType(value) {
@@ -714,6 +869,9 @@ map.on("click", event => {
   if (pointPickMode) {
     pointLatitude.value = event.latlng.lat.toFixed(6);
     pointLongitude.value = event.latlng.lng.toFixed(6);
+    clearGeocodePreview();
+    geocodeResult.innerHTML = `<h3>Punto scelto sulla mappa</h3><p>Coordinate impostate manualmente.</p>`;
+    geocodeResult.className = "geocode-result success";
     pointPickMode = false;
     manualHint.classList.add("hidden");
     map.getContainer().style.cursor = "";
@@ -1127,6 +1285,7 @@ function openPointDialog() {
   pointPickMode = false;
   pointFormStatus.textContent = "";
   pointFormStatus.className = "form-status";
+  clearGeocodeResult();
   pointDialog.showModal();
 }
 
@@ -1277,6 +1436,14 @@ document.getElementById("cancelPointButton")
 document.getElementById("pickPointOnMapButton")
   .addEventListener("click", beginPointPick);
 
+geocodeAddressButton.addEventListener("click", () => {
+  geocodePointAddress({ showAlternatives: true });
+});
+
+pointAddress.addEventListener("input", () => {
+  clearGeocodeResult({ clearCoordinates: true });
+});
+
 document.getElementById("useCurrentPositionForPointButton")
   .addEventListener("click", () => {
     if (!userPosition) {
@@ -1288,19 +1455,33 @@ document.getElementById("useCurrentPositionForPointButton")
 
     pointLatitude.value = userPosition.lat.toFixed(6);
     pointLongitude.value = userPosition.lon.toFixed(6);
+    clearGeocodePreview();
+    geocodeResult.innerHTML = `<h3>Posizione selezionata</h3><p>Sono state usate le coordinate già indicate nella mappa.</p>`;
+    geocodeResult.className = "geocode-result success";
     pointFormStatus.textContent =
       "Sono state inserite le coordinate della posizione selezionata.";
     pointFormStatus.className = "form-status success";
   });
 
-pointForm.addEventListener("submit", event => {
+pointForm.addEventListener("submit", async event => {
   event.preventDefault();
+
+  pointFormStatus.textContent = "";
+  pointFormStatus.className = "form-status";
+
+  const currentLatitude = parseCoordinate(pointLatitude.value);
+  const currentLongitude = parseCoordinate(pointLongitude.value);
+
+  if (!Number.isFinite(currentLatitude) || !Number.isFinite(currentLongitude)) {
+    const found = await geocodePointAddress({ showAlternatives: true });
+    if (!found) return;
+  }
 
   const service = pointFromForm();
 
   if (!isValidService(service)) {
     pointFormStatus.textContent =
-      "Controlla nome, latitudine e longitudine. Le coordinate devono essere numeri validi.";
+      "Non è stato possibile stabilire la posizione. Controlla l’indirizzo oppure scegli manualmente il punto sulla mappa.";
     pointFormStatus.className = "form-status error";
     return;
   }
@@ -1316,6 +1497,7 @@ pointForm.addEventListener("submit", event => {
 
   pointDialog.close();
   pointForm.reset();
+  clearGeocodeResult();
   map.setView([service.latitudine, service.longitudine], 16);
 
   const temporaryMarker =
@@ -1371,8 +1553,8 @@ if ("serviceWorker" in navigator) {
   });
 
   navigator.serviceWorker.addEventListener("controllerchange", () => {
-    if (sessionStorage.getItem("qubi-sw-reloaded-v5") === "1") return;
-    sessionStorage.setItem("qubi-sw-reloaded-v5", "1");
+    if (sessionStorage.getItem("qubi-sw-reloaded-v6") === "1") return;
+    sessionStorage.setItem("qubi-sw-reloaded-v6", "1");
     window.location.reload();
   });
 }

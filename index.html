@@ -10,8 +10,8 @@
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="icon" href="./icons/icon-192.png">
   <link rel="apple-touch-icon" href="./icons/icon-192.png">
-  <link rel="stylesheet" href="./styles.css?v=5">
-  <link rel="stylesheet" href="./admin.css?v=5">
+  <link rel="stylesheet" href="./styles.css?v=6">
+  <link rel="stylesheet" href="./admin.css?v=6">
 </head>
 
 <body>
@@ -251,9 +251,16 @@
           </label>
 
           <label class="form-field full-field">
-            <span>Indirizzo</span>
-            <input name="indirizzo" type="text" maxlength="220">
+            <span>Indirizzo *</span>
+            <input id="pointAddress" name="indirizzo" type="text" maxlength="220" required placeholder="Per esempio: Via Padova 36, Milano">
           </label>
+
+          <div class="address-search-block full-field">
+            <button id="geocodeAddressButton" class="button secondary" type="button">Trova questo indirizzo</button>
+            <p class="helper address-helper">Di norma basta scrivere via e numero civico. Se manca la città, il sito aggiunge automaticamente Milano.</p>
+            <div id="geocodeResult" class="geocode-result hidden" aria-live="polite"></div>
+            <p class="geocode-attribution">Ricerca indirizzi tramite Nominatim. Dati © OpenStreetMap contributors.</p>
+          </div>
 
           <label class="form-field">
             <span>Quartiere</span>
@@ -290,24 +297,31 @@
             <input name="email" type="email" maxlength="180">
           </label>
 
-          <label class="form-field">
-            <span>Latitudine *</span>
-            <input id="pointLatitude" name="latitudine" type="text" inputmode="decimal" required placeholder="45.4642">
-          </label>
-
-          <label class="form-field">
-            <span>Longitudine *</span>
-            <input id="pointLongitude" name="longitudine" type="text" inputmode="decimal" required placeholder="9.1900">
-          </label>
         </div>
 
+        <details class="coordinate-details">
+          <summary>Coordinate avanzate</summary>
+          <p class="helper">Vengono compilate automaticamente dall’indirizzo. Modificale solo quando la ricerca non trova il punto corretto.</p>
+          <div class="form-grid">
+            <label class="form-field">
+              <span>Latitudine</span>
+              <input id="pointLatitude" name="latitudine" type="text" inputmode="decimal" placeholder="45.4642">
+            </label>
+
+            <label class="form-field">
+              <span>Longitudine</span>
+              <input id="pointLongitude" name="longitudine" type="text" inputmode="decimal" placeholder="9.1900">
+            </label>
+          </div>
+        </details>
+
         <div class="coordinate-actions">
-          <button id="pickPointOnMapButton" class="button secondary" type="button">Scegli le coordinate sulla mappa</button>
+          <button id="pickPointOnMapButton" class="button secondary" type="button">Scegli manualmente sulla mappa</button>
           <button id="useCurrentPositionForPointButton" class="button ghost" type="button">Usa la posizione già selezionata</button>
         </div>
 
         <p class="helper">
-          Il punto viene salvato soltanto nel browser e resta disponibile anche dopo la chiusura del sito.
+          Inserisci l’indirizzo e salva: il sito ricaverà automaticamente le coordinate. Il punto resterà salvato soltanto in questo browser.
         </p>
 
         <p id="pointFormStatus" class="form-status" aria-live="polite"></p>
@@ -323,7 +337,8 @@
   <dialog id="privacyDialog" class="privacy-dialog">
     <div class="dialog-content">
       <h2>Come viene gestita la privacy</h2>
-      <p><strong>La posizione viene elaborata soltanto nel browser.</strong> Non viene inviata a QuBì o registrata in un database.</p>
+      <p><strong>La posizione scelta per cercare il servizio più vicino viene elaborata soltanto nel browser.</strong> Non viene inviata a QuBì o registrata in un database.</p>
+      <p>Quando usi la ricerca di un indirizzo per aggiungere un punto, il testo dell’indirizzo viene inviato a Nominatim, il servizio di ricerca geografica basato sui dati OpenStreetMap, per ottenere le coordinate.</p>
       <p>I punti aggiunti o importati vengono salvati nel browser del dispositivo tramite memoria locale. Non vengono caricati online e non sono sincronizzati con altri dispositivi.</p>
       <p>La posizione personale selezionata per la ricerca non viene salvata.</p>
       <p>Il sito non usa account, cookie pubblicitari o strumenti di analisi.</p>
@@ -341,6 +356,6 @@
     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
     crossorigin=""
   ></script>
-  <script src="./app.js?v=5" defer></script>
+  <script src="./app.js?v=6" defer></script>
 </body>
 </html>

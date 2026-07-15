@@ -1,11 +1,11 @@
-const CACHE_NAME = "qubi-pwa-v5";
+const CACHE_NAME = "qubi-pwa-v6";
 
 const LOCAL_ASSETS = [
   "./",
   "./index.html",
-  "./styles.css?v=5",
-  "./admin.css?v=5",
-  "./app.js?v=5",
+  "./styles.css?v=6",
+  "./admin.css?v=6",
+  "./app.js?v=6",
   "./manifest.webmanifest",
   "./data/services.json",
   "./data/services.csv",
