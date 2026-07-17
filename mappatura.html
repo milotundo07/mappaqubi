@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#173b57">
+  <meta name="description" content="Mappatura integrata di direzioni, servizi, progetti, partner e spazi QuBì Milano">
+  <title>Mappatura territoriale · QuBì Milano</title>
+  <link rel="icon" href="./icons/icon-192.png">
+  <link rel="stylesheet" href="./styles.css?v=8">
+  <link rel="stylesheet" href="./mappatura.css?v=1">
+</head>
+<body class="institutional-page">
+  <header class="app-header institutional-header">
+    <div>
+      <p class="eyebrow">QuBì Milano · lettura istituzionale</p>
+      <h1>Mappatura territoriale integrata</h1>
+      <p class="subtitle">Direzioni, aree, servizi, progetti, partner e spazi letti insieme sul territorio.</p>
+    </div>
+    <div class="header-actions">
+      <a class="button secondary" href="./index.html">Vista per i cittadini</a>
+      <a class="button ghost" href="./gestione.html">Gestisci i dati</a>
+    </div>
+  </header>
+  <main class="institutional-layout">
+    <aside class="institutional-sidebar">
+      <section class="institutional-intro">
+        <h2>Come leggere la mappa</h2>
+        <p>Ogni punto rappresenta uno spazio fisico. La scheda riunisce servizi, progetti, soggetti coinvolti e territorio servito.</p>
+      </section>
+      <section class="filter-panel">
+        <label class="form-field full-field"><span>Cerca nella mappatura</span><input id="institutionalSearch" type="search" placeholder="Servizio, progetto, partner, quartiere…"></label>
+        <div class="institutional-filter-grid">
+          <label class="form-field"><span>Direzione</span><select id="directionFilter"></select></label>
+          <label class="form-field"><span>Area</span><select id="areaFilter"></select></label>
+          <label class="form-field"><span>Area tematica</span><select id="themeFilter"></select></label>
+          <label class="form-field"><span>Servizio</span><select id="institutionalServiceFilter"></select></label>
+          <label class="form-field"><span>Progetto</span><select id="projectFilter"></select></label>
+          <label class="form-field"><span>Partner</span><select id="partnerFilter"></select></label>
+          <label class="form-field"><span>Spazio</span><select id="spaceFilter"></select></label>
+          <label class="form-field"><span>Territorio coinvolto</span><select id="territoryFilter"></select></label>
+          <label class="form-field"><span>Municipio</span><select id="municipalityFilter"></select></label>
+        </div>
+        <div class="filter-actions"><button id="resetInstitutionalFilters" class="button ghost" type="button">Azzera filtri</button><button id="fitInstitutionalResults" class="button secondary" type="button">Inquadra risultati</button></div>
+      </section>
+      <section class="institutional-summary" aria-live="polite">
+        <article><strong id="visibleSpaces">0</strong><span>spazi</span></article>
+        <article><strong id="visibleProjects">0</strong><span>progetti</span></article>
+        <article><strong id="visiblePartners">0</strong><span>partner</span></article>
+        <article><strong id="visibleDirections">0</strong><span>direzioni</span></article>
+      </section>
+      <section class="data-quality-panel">
+        <h2>Completezza dei dati</h2>
+        <p id="dataQualityText">Analisi in corso…</p>
+        <div class="quality-bar"><span id="dataQualityBar"></span></div>
+        <p class="helper">L’archivio attuale non contiene ancora tutti i campi richiesti da Lisa. La pagina è già pronta a leggerli appena vengono aggiunti al JSON.</p>
+      </section>
+    </aside>
+    <section class="institutional-map-column">
+      <div id="institutionalMap" role="application" aria-label="Mappa istituzionale"></div>
+      <div class="institutional-results-heading"><div><p class="eyebrow">Risultati</p><h2>Spazi e interventi visualizzati</h2></div><p id="institutionalCount" class="count-badge">0 risultati</p></div>
+      <div id="institutionalActiveFilters" class="active-filter-summary"></div>
+      <div id="institutionalList" class="institutional-list"></div>
+    </section>
+  </main>
+  <footer>
+    <p>Strumento di lettura territoriale. Verificare responsabilità e aggiornamento dei dati prima dell’uso decisionale.</p>
+    <p><a href="./index.html">Vista cittadini</a> · <a href="./gestione.html">Gestione dati</a> · <a href="https://github.com/milotundo07/mappaqubi">Codice</a></p>
+  </footer>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9coqIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="./mappatura.js?v=1" defer></script>
+</body>
+</html>

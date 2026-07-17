@@ -6,16 +6,14 @@
   <meta name="theme-color" content="#1f6f8b">
   <meta name="description" content="Mappa accessibile dei servizi QuBì Milano">
   <title>Mappa servizi QuBì</title>
-
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="icon" href="./icons/icon-192.png">
   <link rel="apple-touch-icon" href="./icons/icon-192.png">
-  <link rel="stylesheet" href="./styles.css?v=7">
-  <link rel="stylesheet" href="./admin.css?v=7">
+  <link rel="stylesheet" href="./styles.css?v=8">
+  <link rel="stylesheet" href="./admin.css?v=8">
 </head>
 <body>
   <noscript><div class="noscript">Per usare la mappa è necessario attivare JavaScript nel browser.</div></noscript>
-
   <header class="app-header">
     <div>
       <p class="eyebrow">QuBì Milano</p>
@@ -23,6 +21,7 @@
       <p class="subtitle">Cerca per bisogno, indirizzo o posizione. La tua posizione non viene salvata.</p>
     </div>
     <div class="header-actions">
+      <a class="button secondary" href="./mappatura.html">Mappatura istituzionale</a>
       <button id="simpleModeButton" class="button ghost" type="button" aria-pressed="false">Modalità semplice</button>
       <button id="installButton" class="button secondary hidden" type="button">Installa l’app</button>
       <button id="privacyButton" class="button ghost" type="button">Privacy</button>
@@ -35,53 +34,29 @@
         <div class="step-number">1</div>
         <div class="step-content filter-stack">
           <h2>Cosa stai cercando?</h2>
-
           <label class="form-field public-field">
             <span>Cerca una parola</span>
             <input id="serviceSearch" type="search" placeholder="Es. doposcuola, salute, quartiere…" autocomplete="off">
           </label>
-
-          <label class="form-field public-field">
-            <span>Di cosa hai bisogno?</span>
-            <select id="needFilter" class="large-select"></select>
-          </label>
-
-          <label class="form-field public-field advanced-public-filter">
-            <span>Tipo di luogo</span>
-            <select id="serviceType" class="large-select">
-              <option value="tutti">Tutti i servizi</option>
-            </select>
-          </label>
-
-          <label class="form-field public-field advanced-public-filter">
-            <span>Destinatari</span>
-            <select id="targetFilter" class="large-select"></select>
-          </label>
-
+          <label class="form-field public-field"><span>Di cosa hai bisogno?</span><select id="needFilter" class="large-select"></select></label>
+          <label class="form-field public-field advanced-public-filter"><span>Tipo di luogo</span><select id="serviceType" class="large-select"><option value="tutti">Tutti i servizi</option></select></label>
+          <label class="form-field public-field advanced-public-filter"><span>Destinatari</span><select id="targetFilter" class="large-select"></select></label>
           <div class="inline-checks advanced-public-filter">
             <label class="check-row compact-check"><input id="freeOnly" type="checkbox"> Solo servizi gratuiti</label>
             <label class="check-row compact-check"><input id="favoritesOnly" type="checkbox"> Solo preferiti</label>
           </div>
         </div>
       </article>
-
       <article class="step-card">
         <div class="step-number">2</div>
         <div class="step-content">
           <h2>Dove ti trovi?</h2>
-          <div class="button-stack">
-            <button id="locationButton" class="button primary large" type="button">Usa la mia posizione</button>
-          </div>
-
+          <div class="button-stack"><button id="locationButton" class="button primary large" type="button">Usa la mia posizione</button></div>
           <div class="address-location-box">
-            <label class="form-field public-field" for="locationAddress">
-              <span>Oppure scrivi un indirizzo</span>
-              <input id="locationAddress" type="text" placeholder="Es. Via Padova 36" autocomplete="street-address">
-            </label>
+            <label class="form-field public-field" for="locationAddress"><span>Oppure scrivi un indirizzo</span><input id="locationAddress" type="text" placeholder="Es. Via Padova 36" autocomplete="street-address"></label>
             <button id="locationAddressButton" class="button secondary" type="button">Trova indirizzo</button>
             <div id="locationAddressResults" class="address-results hidden" aria-live="polite"></div>
           </div>
-
           <div class="button-stack location-secondary-actions">
             <button id="mapPickButton" class="button secondary large" type="button">Scegli un punto sulla mappa</button>
             <button id="clearLocationButton" class="button ghost large" type="button">Cancella la posizione</button>
@@ -89,25 +64,16 @@
           <p id="locationStatus" class="status" aria-live="polite">Nessuna posizione selezionata.</p>
         </div>
       </article>
-
       <article class="step-card advanced-public-filter">
         <div class="step-number">3</div>
         <div class="step-content">
           <h2>Municipi</h2>
           <p class="helper">Puoi mostrare uno o più Municipi.</p>
           <div id="municipioButtons" class="municipio-grid" aria-label="Filtri Municipi"></div>
-          <div class="small-actions">
-            <button id="allMunicipiButton" class="button compact" type="button">Tutti</button>
-            <button id="noMunicipiButton" class="button compact ghost" type="button">Nessuno</button>
-          </div>
+          <div class="small-actions"><button id="allMunicipiButton" class="button compact" type="button">Tutti</button><button id="noMunicipiButton" class="button compact ghost" type="button">Nessuno</button></div>
         </div>
       </article>
-
-      <article class="result-card" aria-live="polite">
-        <h2>Servizio più vicino</h2>
-        <div id="nearestResult" class="result-empty">Indica la tua posizione per vedere il risultato.</div>
-      </article>
-
+      <article class="result-card" aria-live="polite"><h2>Servizio più vicino</h2><div id="nearestResult" class="result-empty">Indica la tua posizione per vedere il risultato.</div></article>
       <details class="details-panel advanced-public-filter">
         <summary>Altre opzioni</summary>
         <label class="check-row"><input id="showBoundaries" type="checkbox"> Mostra i confini dei Municipi</label>
@@ -115,29 +81,17 @@
         <p class="helper"><a href="./gestione.html">Apri la gestione dei dati</a></p>
       </details>
     </section>
-
     <section class="map-section">
       <div id="manualHint" class="map-hint hidden">Tocca la mappa nel punto desiderato.</div>
       <div id="map" role="application" aria-label="Mappa dei servizi"></div>
-      <div class="legend" aria-label="Legenda tipi di luogo">
-        <h2>Tipi di luogo</h2>
-        <div id="legendItems"></div>
-      </div>
+      <div class="legend" aria-label="Legenda tipi di luogo"><h2>Tipi di luogo</h2><div id="legendItems"></div></div>
     </section>
   </main>
-
   <section class="service-list-section">
-    <div class="section-heading">
-      <div>
-        <p class="eyebrow">Elenco</p>
-        <h2>Servizi visualizzati</h2>
-      </div>
-      <p id="serviceCount" class="count-badge">0 servizi</p>
-    </div>
+    <div class="section-heading"><div><p class="eyebrow">Elenco</p><h2>Servizi visualizzati</h2></div><p id="serviceCount" class="count-badge">0 servizi</p></div>
     <div id="activeFilterSummary" class="active-filter-summary" aria-live="polite"></div>
     <div id="serviceList" class="service-list"></div>
   </section>
-
   <dialog id="privacyDialog" class="privacy-dialog">
     <div class="dialog-content">
       <h2>Come viene gestita la privacy</h2>
@@ -149,13 +103,11 @@
       <button id="closePrivacyButton" class="button primary" type="button">Ho capito</button>
     </div>
   </dialog>
-
   <footer>
     <p>I dati possono cambiare: verifica orari e accesso prima di recarti al servizio.</p>
-    <p><a href="./gestione.html">Gestisci i servizi</a> · <a href="./privacy.html">Privacy</a> · <a href="https://github.com/milotundo07/mappaqubi">Codice del progetto</a></p>
+    <p><a href="./mappatura.html">Mappatura istituzionale</a> · <a href="./gestione.html">Gestisci i servizi</a> · <a href="./privacy.html">Privacy</a> · <a href="https://github.com/milotundo07/mappaqubi">Codice del progetto</a></p>
   </footer>
-
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9coqIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
   <script src="./data-store.js?v=7"></script>
   <script src="./app.js?v=7" defer></script>
 </body>
